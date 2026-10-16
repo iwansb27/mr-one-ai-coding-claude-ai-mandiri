@@ -46,3 +46,28 @@ Planning is being done on Android. The target execution device is a future lapto
 
 ## Status rule
 Only mark PASS when reproducible evidence is recorded. Use PASS / FAIL / UNTESTED / BLOCKED. No secrets in this public repository.
+
+
+## Follow-up audit — FCC-PLAN-003 (2026-10-16)
+
+### Files reviewed in upstream
+- `scripts/update/fcc-update`: checks the latest published version via `_fcc-update-check`, validates a numeric version, downloads `scripts/install.sh` from a version-tag URL, and executes it. This is better than using `main` for this update path, but the downloaded installer is still executed without a separate checksum/signature verification in this wrapper.
+- `scripts/update/fcc-update.cmd`: uses a PowerShell update path and downloads the installer from the selected version tag; separate full review still required.
+- `src/free_claude_code/updater/check.py`: queries PyPI metadata over HTTPS and validates the version format and available release file. This check does not itself prove the downloaded installer is signed or hash-verified.
+- `.github/workflows/tests.yml`: the inspected CI workflow uses pull-request triggers and `contents: read` permissions in the reviewed jobs. This is a positive control for those jobs only; it is not a full audit of every workflow.
+- `src/free_claude_code/api/routes.py`: inspected initial section; this alone does not settle whether request content is logged elsewhere. Check logging configuration and server logs before using private code.
+
+### Risk decision
+- **BLOCKED for installation for now**: installer/update chain not fully audited end-to-end, OS compatibility unknown, and no disposable-device test has run.
+- Do not interpret this as a finding that FCC is malicious. It is a risk-control decision until the remaining checks are completed.
+- Do not send private MR.ONE source, production credentials, or sensitive prompts through the proxy until logging and provider data-handling terms are verified.
+
+### NVIDIA access finding
+- NVIDIA's official documentation says Developer Program members can access hosted NIM API endpoints for prototyping; model availability and account entitlement still need to be checked in the signed-in account. No key has been created or tested here and no paid usage was initiated.
+- Exact free quota, rate limits, reset behavior, card requirements, and account eligibility remain **UNTESTED** for Iwan's account.
+
+### Next actions
+1. Audit the complete install scripts, updater scripts, and any scripts downloaded by them, with emphasis on checksums/signatures, profile/PATH edits, persistence, privilege escalation, and uninstall behavior.
+2. Review all workflows and the full request/logging path, including whether prompts are written to local files.
+3. Select a pinned release only after compatibility and supply-chain checks; never run a remote script piped directly to a shell as the first test.
+4. Revisit the NVIDIA account-specific free access, limits, and terms before any API test.
