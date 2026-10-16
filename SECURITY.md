@@ -28,3 +28,11 @@ This repository is public. Treat all committed text as visible to anyone.
 4. Record the incident without copying the secret into this public repo.
 
 The .gitignore file is only a secondary control; it does not replace review of staged files or Git history.
+
+
+## Follow-up audit notes — 2026-10-16
+- The updater wrapper reviewed at `scripts/update/fcc-update` downloads the installer from a version-tag URL after checking the latest published version. The wrapper inspected here does not itself verify a cryptographic signature or checksum for the installer payload; verify the full release/download chain before running it.
+- The corresponding Windows updater downloads a version-tagged PowerShell installer; it also requires full review before execution.
+- The reviewed CI workflow file uses pull-request triggers and `contents: read` on inspected jobs. This is a limited observation, not a complete audit of all workflows or branch protection.
+- A historical public issue reports plaintext request payload logging and an earlier CI automation problem. Treat that as a lead to verify against the current commit, not as proof the current version has the same issue: https://github.com/Alishahryar1/free-claude-code/issues/104
+- Until logging and provider data handling are confirmed, do not submit private or production MR.ONE code through FCC.
